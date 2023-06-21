@@ -36,6 +36,7 @@ import BotItemCompact from './BotItemCompact'
 import BotItemPipeline from './BotItemPipeline'
 import CreateBotModal from './CreateBotModal'
 import EditStageModal from './EditStageModal'
+import ImportBotFromGitModal from './ImportBotFromGitModal'
 import ImportBotModal from './ImportBotModal'
 import RollbackBotModal from './RollbackBotModal'
 import style from './style.scss'
@@ -49,6 +50,7 @@ class Bots extends Component<Props> {
     isCreateBotModalOpen: false,
     isRollbackModalOpen: false,
     isImportBotModalOpen: false,
+    isImportBotFromGitModalOpen: false,
     isEditStageModalOpen: false,
     focusedBot: null,
     selectedStage: null,
@@ -82,6 +84,10 @@ class Bots extends Component<Props> {
 
   toggleImportBotModal = () => {
     this.setState({ isImportBotModalOpen: !this.state.isImportBotModalOpen })
+  }
+
+  toggleImportBotFromGitModal = () => {
+    this.setState({ isImportBotFromGitModalOpen: !this.state.isImportBotFromGitModalOpen })
   }
 
   async exportBot(botId: string) {
@@ -145,6 +151,12 @@ class Bots extends Component<Props> {
               text={lang.tr('admin.workspace.bots.importExisting')}
               icon="import"
               onClick={() => this.setState({ isImportBotModalOpen: true })}
+            />
+            <Button
+              id="btn-import-bot"
+              text={lang.tr('admin.workspace.bots.importFromGit')}
+              icon="git-branch"
+              onClick={() => this.setState({ isImportBotFromGitModalOpen: true })}
             />
           </ButtonGroup>
         </Popover>
@@ -412,6 +424,11 @@ class Bots extends Component<Props> {
               <ImportBotModal
                 isOpen={this.state.isImportBotModalOpen}
                 toggle={this.toggleImportBotModal}
+                onCreateBotSuccess={this.props.fetchBots}
+              />
+              <ImportBotFromGitModal
+                isOpen={this.state.isImportBotFromGitModalOpen}
+                toggle={this.toggleImportBotFromGitModal}
                 onCreateBotSuccess={this.props.fetchBots}
               />
             </AccessControl>

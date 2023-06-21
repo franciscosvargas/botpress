@@ -2,10 +2,12 @@ import { AdminServices } from 'admin/admin-router'
 import { CustomAdminRouter } from 'admin/utils/customAdminRouter'
 import { BotConfig } from 'botpress/sdk'
 import { UnexpectedError } from 'common/http'
+import { createArchiveFromFolder } from 'core/misc/archive'
 import { ConflictError, ForbiddenError, sendSuccess } from 'core/routers'
 import { assertSuperAdmin, assertWorkspace } from 'core/security'
 import Joi from 'joi'
 import _ from 'lodash'
+import Git from 'nodegit'
 import yn from 'yn'
 
 const chatUserBotFields = [
@@ -291,6 +293,23 @@ class BotsRouter extends CustomAdminRouter {
         const success = await this.botService.mountBot(botId)
 
         return success ? sendSuccess(res, `Reloaded bot ${botId}`) : res.sendStatus(400)
+      })
+    )
+
+    router.post(
+      '/:botId/git/import',
+      this.needPermissions('write', `${this.resource}.archive`),
+      this.asyncMiddleware(async (req, res) => {
+        const botFolder = `${__dirname}/git/${req.params.botId}`
+        await Git.Clone(req.body.gitRepositoryUrl, botFolder)
+
+        const botId = await this.botService.makeBotId(req.params.botId, req.workspace!)
+
+        const archive = await createArchiveFromFolder(botFolder, [])
+
+        //await this.botService.importBot(botId, Buffer.concat(buffers), req.workspace!, false)
+
+        res.status(204).send()
       })
     )
   }

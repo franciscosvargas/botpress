@@ -23,10 +23,12 @@ interface State {
   isProcessing: boolean
   overwrite: boolean
   progress: number
+  gitRepositoryUrl: string
 }
 
 const defaultState: State = {
   botId: '',
+  gitRepositoryUrl: '',
   error: null,
   filePath: null,
   fileContent: null,
@@ -51,18 +53,9 @@ class ImportBotModal extends Component<Props, State> {
     this.setState({ isProcessing: true, progress: 0 })
 
     try {
-      await api
-        .getSecured({ timeout: ms('20m') })
-        .post(
-          `/admin/workspace/bots/${this.state.botId}/import?overwrite=${this.state.overwrite}`,
-          this.state.fileContent,
-          {
-            headers: { 'Content-Type': 'application/tar+gzip' },
-            onUploadProgress: evt => {
-              this.setState({ progress: Math.round((evt.loaded / evt.total) * 100) })
-            }
-          }
-        )
+      await api.getSecured({ timeout: ms('20m') }).post(`/admin/workspace/bots/${this.state.botId}/git/import`, {
+        gitRepositoryUrl: this.state.gitRepositoryUrl
+      })
 
       toast.success('admin.workspace.bots.import.successful', this.state.botId)
 
@@ -91,8 +84,10 @@ class ImportBotModal extends Component<Props, State> {
   handleBotIdChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
     this.setState({ botId: sanitizeBotId(e.currentTarget.value), overwrite: false }, this.checkIdAvailability)
 
+  handleGitUrlChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
+    this.setState({ gitRepositoryUrl: e.currentTarget.value, overwrite: false }, this.checkIdAvailability)
+
   handleFileChanged = (files: FileList | null) => {
-    console.log('files', files)
     if (!files) {
       return
     }
@@ -125,9 +120,14 @@ class ImportBotModal extends Component<Props, State> {
   }
 
   get isButtonDisabled() {
-    const { isProcessing, botId, fileContent, isIdTaken, overwrite } = this.state
+    const { isProcessing, botId, gitRepositoryUrl, isIdTaken, overwrite } = this.state
     return (
-      isProcessing || !botId || !fileContent || (isIdTaken && !overwrite) || !this._form || !this._form.checkValidity()
+      isProcessing ||
+      !botId ||
+      !gitRepositoryUrl ||
+      (isIdTaken && !overwrite) ||
+      !this._form ||
+      !this._form.checkValidity()
     )
   }
 
@@ -144,8 +144,8 @@ class ImportBotModal extends Component<Props, State> {
     }
     return (
       <Dialog
-        title={lang.tr('admin.workspace.bots.import.fromArchive')}
-        icon="import"
+        title={lang.tr('admin.workspace.bots.import.fromGitRepository')}
+        icon="git-branch"
         isOpen={this.props.isOpen}
         onClose={this.toggleDialog}
         transitionDuration={0}
@@ -190,21 +190,19 @@ class ImportBotModal extends Component<Props, State> {
                 autoFocus={true}
               />
             </FormGroup>
-            <FormGroup label={lang.tr('admin.workspace.bots.import.archive')} labelInfo="*" labelFor="archive">
-              <FileInput
-                tabIndex={2}
-                text={this.state.filePath || lang.tr('chooseFile')}
-                onChange={event => this.handleFileChanged((event.target as HTMLInputElement).files)}
-                inputProps={{ accept: '.zip,.tgz' }}
+            <FormGroup label={lang.tr('admin.workspace.bots.import.gitRepositoryUrl')} labelInfo="*" labelFor="archive">
+              <InputGroup
+                id="input-gitRepositoryUrl"
+                tabIndex={1}
+                placeholder={lang.tr('admin.workspace.bots.create.gitRepositoryUrlPlaceholder')}
+                intent={Intent.PRIMARY}
+                minLength={3}
+                maxLength={500}
+                value={this.state.gitRepositoryUrl}
+                onChange={this.handleGitUrlChanged}
+                autoFocus={true}
               />
             </FormGroup>
-            {this.state.isIdTaken && (
-              <Checkbox
-                label={lang.tr('admin.workspace.bots.import.overwrite')}
-                checked={this.state.overwrite}
-                onChange={e => this.setState({ overwrite: e.currentTarget.checked })}
-              ></Checkbox>
-            )}
           </div>
           <div className={Classes.DIALOG_FOOTER}>
             {!!this.state.error && <Callout intent={Intent.DANGER}>{this.state.error}</Callout>}

@@ -135,6 +135,17 @@ const BotItemPipeline: FC<Props> = ({
                   id="btn-createRevision-pipeline"
                   onClick={createRevision}
                 />
+                <AccessControl resource="admin.bots.*" operation="write">
+                  <MenuItem
+                    text={'Create Git Repository'}
+                    icon="git-branch"
+                    id="btn-integrate-git"
+                    onClick={deleteBot}
+                  />
+                  {hasError && (
+                    <MenuItem text={lang.tr('admin.workspace.bots.item.reload')} icon="refresh" onClick={reloadBot} />
+                  )}
+                </AccessControl>
                 <MenuItem
                   text={lang.tr('admin.workspace.bots.item.rollback')}
                   icon="undo"

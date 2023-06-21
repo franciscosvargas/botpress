@@ -305,6 +305,7 @@
           "alreadyExists": "L'importation d'un bot déjà existant supprimera sa configuration de messagerie avant d'être synchronisé",
           "archive": "Archive de Bot",
           "fromArchive": "Importer le bot depuis l'archive",
+          "fromGitRepository": "Importer un bot à partir du référentiel git",
           "import": "Importer un bot",
           "overwrite": "Remplacer le bot existant",
           "successful": "Importation du bot {details} réussi!"

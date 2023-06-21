@@ -75,6 +75,8 @@ const BotItemCompact: FC<Props> = props => {
           />
         )}
 
+        <AnchorButton text={'Git Sync'} icon="git-branch" href={botShortLink} target="_blank" minimal />
+
         <AccessControl resource="admin.bots.*" operation="read">
           <Popover minimal position={Position.BOTTOM} interactionKind={PopoverInteractionKind.HOVER}>
             <Button className="btn-menu-bot-item" icon={<Icon icon="menu" />} minimal />
