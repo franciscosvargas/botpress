@@ -186,6 +186,10 @@ class BotsRouter extends CustomAdminRouter {
         try {
           await this.botService.deleteBot(botId)
           await this.workspaceService.deleteBotRef(botId)
+
+          const gitFolderPath = `${__dirname}/git/${botId}`
+          await fs.remove(gitFolderPath)
+
           return sendSuccess(res, 'Removed bot from team', { botId })
         } catch (err) {
           throw new UnexpectedError('Cannot delete bot', err)
