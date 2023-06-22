@@ -2,9 +2,10 @@ import { AdminServices } from 'admin/admin-router'
 import { CustomAdminRouter } from 'admin/utils/customAdminRouter'
 import { BotConfig } from 'botpress/sdk'
 import { UnexpectedError } from 'common/http'
-import { createArchiveFromFolder } from 'core/misc/archive'
+import { createArchiveFromFolder, extractArchive } from 'core/misc/archive'
 import { ConflictError, ForbiddenError, sendSuccess } from 'core/routers'
 import { assertSuperAdmin, assertWorkspace } from 'core/security'
+import fs from 'fs-extra'
 import Joi from 'joi'
 import _ from 'lodash'
 import Git from 'nodegit'
@@ -312,6 +313,44 @@ class BotsRouter extends CustomAdminRouter {
         const archive = await createArchiveFromFolder(botFolder, [])
 
         await this.botService.importBot(botId, archive, req.workspace!, false)
+
+        res.status(204).send()
+      })
+    )
+
+    router.post(
+      '/:botId/git/export',
+      this.needPermissions('read', `${this.resource}.archive`),
+      this.asyncMiddleware(async (req, res) => {
+        const botId = req.params.botId
+        const archive = await this.botService.exportBot(botId)
+
+        const repositoryFolder = `${__dirname}/git/${req.params.botId}`
+
+        await extractArchive(archive, repositoryFolder)
+
+        const repo = await Git.Repository.open(repositoryFolder)
+
+        const index = await repo.refreshIndex()
+        await index.addAll()
+        await index.write()
+
+        const oid = await index.writeTree()
+
+        const parent = await repo.getHeadCommit()
+        const author = Git.Signature.now(req.body.author.name, req.body.author.email)
+        const committer = author
+
+        const commitId = await repo.createCommit('HEAD', author, committer, req.body.commitMessage, oid, [parent])
+
+        const remote = await repo.getRemote('origin')
+        const gitConfig = {
+          credentials(url, username) {
+            return Git.Cred.userpassPlaintextNew(req.body.securityToken, 'x-oauth-basic')
+          }
+        }
+
+        await remote.push(['refs/heads/main:refs/heads/main'], gitConfig)
 
         res.status(204).send()
       })

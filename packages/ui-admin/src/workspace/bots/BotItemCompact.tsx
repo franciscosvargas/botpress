@@ -15,10 +15,12 @@ import { BotConfig, ModuleDefinition } from 'botpress/sdk'
 import { lang } from 'botpress/shared'
 import cx from 'classnames'
 import { intersection } from 'lodash'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 
+import api from '~/app/api'
 import AccessControl, { isChatUser, isOperationAllowed } from '~/auth/AccessControl'
+import GitSyncModal from './GitSyncModal'
 import { NeedsTrainingWarning } from './NeedsTrainingWarning'
 import style from './style.scss'
 import { WorkspaceAppItems } from './WorkspaceAppItems'
@@ -37,12 +39,22 @@ interface Props {
 }
 
 const BotItemCompact: FC<Props> = props => {
+  const [gitSyncModalOpen, setGitSyncModalOpen] = useState(false)
   const botShortLink = `${window.location.origin + window['ROOT_PATH']}/s/${props.bot.id}`
   const botStudioLink = isChatUser() ? botShortLink : `studio/${props.bot.id}`
   const nluModuleEnabled = !!props.loadedModules.find(m => m.name === 'nlu')
   const hasStudioAccess = isOperationAllowed({ resource: 'studio', operation: 'read' })
   const languages = intersection(props.bot.languages, props.installedNLULanguages)
   const botHasUninstalledNLULanguages = props.bot.languages.length !== languages.length ? true : false
+
+  const toggleImportBotFromGitModal = () => {
+    setGitSyncModalOpen(!gitSyncModalOpen)
+  }
+
+  const handleGitSync = async botId => {
+    toggleImportBotFromGitModal()
+    //await api.getSecured({}).post(`/admin/workspace/bots/${props.bot.id}/git/export`)
+  }
 
   return (
     <div className={cx('bp_table-row', style.tableRow)} key={props.bot.id}>
@@ -75,7 +87,7 @@ const BotItemCompact: FC<Props> = props => {
           />
         )}
 
-        <AnchorButton text={'Git Sync'} icon="git-branch" href={botShortLink} target="_blank" minimal />
+        <AnchorButton text={'Git Sync'} icon="git-branch" minimal onClick={handleGitSync} />
 
         <AccessControl resource="admin.bots.*" operation="read">
           <Popover minimal position={Position.BOTTOM} interactionKind={PopoverInteractionKind.HOVER}>
@@ -138,6 +150,13 @@ const BotItemCompact: FC<Props> = props => {
               </AccessControl>
             </Menu>
           </Popover>
+
+          <GitSyncModal
+            botId={props.bot.id}
+            isOpen={gitSyncModalOpen}
+            toggle={toggleImportBotFromGitModal}
+            onCreateBotSuccess={() => {}}
+          />
         </AccessControl>
       </div>
 

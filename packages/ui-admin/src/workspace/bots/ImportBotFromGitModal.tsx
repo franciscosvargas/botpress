@@ -206,7 +206,7 @@ class ImportBotModal extends Component<Props, State> {
                 maxLength={500}
                 value={this.state.gitRepositoryUrl}
                 onChange={this.handleGitUrlChanged}
-                autoFocus={true}
+                autoFocus={false}
               />
             </FormGroup>
             <FormGroup label={lang.tr('admin.workspace.bots.import.gitSecurityToken')} labelInfo="" labelFor="archive">
@@ -219,7 +219,7 @@ class ImportBotModal extends Component<Props, State> {
                 maxLength={500}
                 value={this.state.gitSecurityToken}
                 onChange={this.handleGitSecurityTokenChanged}
-                autoFocus={true}
+                autoFocus={false}
               />
             </FormGroup>
           </div>
