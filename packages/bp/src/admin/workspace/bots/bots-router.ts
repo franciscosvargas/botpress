@@ -307,7 +307,7 @@ class BotsRouter extends CustomAdminRouter {
 
         const archive = await createArchiveFromFolder(botFolder, [])
 
-        //await this.botService.importBot(botId, Buffer.concat(buffers), req.workspace!, false)
+        await this.botService.importBot(botId, archive, req.workspace!, false)
 
         res.status(204).send()
       })
