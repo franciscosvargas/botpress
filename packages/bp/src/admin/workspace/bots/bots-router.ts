@@ -307,10 +307,13 @@ class BotsRouter extends CustomAdminRouter {
           : req.body.gitRepositoryUrl
 
         await Git.Clone(gitUrl, botFolder)
+        const repo = await Git.Repository.open(botFolder)
+        const branchRef = await repo.getBranch(`refs/remotes/origin/${req.body.branchName}`)
+        await repo.checkoutRef(branchRef)
 
         const botId = await this.botService.makeBotId(req.params.botId, req.workspace!)
 
-        const archive = await createArchiveFromFolder(botFolder, [])
+        const archive = await createArchiveFromFolder(`${botFolder}${req.body.botPath || ''}`, [])
 
         await this.botService.importBot(botId, archive, req.workspace!, false)
 

@@ -24,13 +24,17 @@ interface State {
   overwrite: boolean
   progress: number
   gitRepositoryUrl: string
+  gitBranchName: string
   gitSecurityToken: string
+  gitBotPath: string
 }
 
 const defaultState: State = {
   botId: '',
   gitRepositoryUrl: '',
   gitSecurityToken: '',
+  gitBranchName: 'master',
+  gitBotPath: '/',
   error: null,
   filePath: null,
   fileContent: null,
@@ -57,7 +61,9 @@ class ImportBotModal extends Component<Props, State> {
     try {
       await api.getSecured({ timeout: ms('20m') }).post(`/admin/workspace/bots/${this.state.botId}/git/import`, {
         gitRepositoryUrl: this.state.gitRepositoryUrl,
-        gitSecurityToken: this.state.gitSecurityToken
+        gitSecurityToken: this.state.gitSecurityToken,
+        branchName: this.state.gitBranchName,
+        botPath: this.state.gitBotPath
       })
 
       toast.success('admin.workspace.bots.import.successful', this.state.botId)
@@ -88,10 +94,16 @@ class ImportBotModal extends Component<Props, State> {
     this.setState({ botId: sanitizeBotId(e.currentTarget.value), overwrite: false }, this.checkIdAvailability)
 
   handleGitUrlChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
-    this.setState({ gitRepositoryUrl: e.currentTarget.value, overwrite: false }, this.checkIdAvailability)
+    this.setState({ gitRepositoryUrl: e.currentTarget.value, overwrite: false })
 
   handleGitSecurityTokenChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
-    this.setState({ gitSecurityToken: e.currentTarget.value, overwrite: false }, this.checkIdAvailability)
+    this.setState({ gitSecurityToken: e.currentTarget.value, overwrite: false })
+
+  handleGitBranchName = (e: React.ChangeEvent<HTMLInputElement>) =>
+    this.setState({ gitBranchName: e.currentTarget.value, overwrite: false })
+
+  handleGitPath = (e: React.ChangeEvent<HTMLInputElement>) =>
+    this.setState({ gitBotPath: e.currentTarget.value, overwrite: false })
 
   handleFileChanged = (files: FileList | null) => {
     if (!files) {
@@ -206,6 +218,39 @@ class ImportBotModal extends Component<Props, State> {
                 maxLength={500}
                 value={this.state.gitRepositoryUrl}
                 onChange={this.handleGitUrlChanged}
+                autoFocus={false}
+              />
+            </FormGroup>
+            <FormGroup label={'Branch Name'} labelInfo="*" labelFor="archive">
+              <InputGroup
+                id="input-gitBranchName"
+                tabIndex={1}
+                placeholder={'Branch name that you want import'}
+                intent={Intent.PRIMARY}
+                minLength={3}
+                maxLength={500}
+                value={this.state.gitBranchName}
+                onChange={this.handleGitBranchName}
+                autoFocus={false}
+              />
+            </FormGroup>
+            <FormGroup
+              label={'Bot Path'}
+              labelInfo="*"
+              labelFor="archive"
+              helperText={
+                'Where are your bot files located on your repository? Please specify the path to your bot path, ex: "/projects/bot/default" or keep "/" if your bot are in the root.'
+              }
+            >
+              <InputGroup
+                id="input-gitBotPath"
+                tabIndex={1}
+                placeholder={'Branch name that you want import'}
+                intent={Intent.PRIMARY}
+                minLength={3}
+                maxLength={500}
+                value={this.state.gitBotPath}
+                onChange={this.handleGitPath}
                 autoFocus={false}
               />
             </FormGroup>

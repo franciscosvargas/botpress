@@ -311,7 +311,7 @@
           "alreadyInUse": "Already in use",
           "alreadyExists": "Importing an already existing bot will delete its messaging configuration before being synchronized",
           "archive": "Bot Archive",
-          "gitRepositoryUrl": "Git Repository URL",
+          "gitRepositoryUrl": "Repository URL",
           "gitSecurityToken": "Git Security Token",
           "fromArchive": "Import bot from archive",
           "fromGitRepository": "Import bot from git repository",
