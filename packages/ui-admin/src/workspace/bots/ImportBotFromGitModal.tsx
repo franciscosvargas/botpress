@@ -24,11 +24,13 @@ interface State {
   overwrite: boolean
   progress: number
   gitRepositoryUrl: string
+  gitSecurityToken: string
 }
 
 const defaultState: State = {
   botId: '',
   gitRepositoryUrl: '',
+  gitSecurityToken: '',
   error: null,
   filePath: null,
   fileContent: null,
@@ -54,7 +56,8 @@ class ImportBotModal extends Component<Props, State> {
 
     try {
       await api.getSecured({ timeout: ms('20m') }).post(`/admin/workspace/bots/${this.state.botId}/git/import`, {
-        gitRepositoryUrl: this.state.gitRepositoryUrl
+        gitRepositoryUrl: this.state.gitRepositoryUrl,
+        gitSecurityToken: this.state.gitSecurityToken
       })
 
       toast.success('admin.workspace.bots.import.successful', this.state.botId)
@@ -86,6 +89,9 @@ class ImportBotModal extends Component<Props, State> {
 
   handleGitUrlChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
     this.setState({ gitRepositoryUrl: e.currentTarget.value, overwrite: false }, this.checkIdAvailability)
+
+  handleGitSecurityTokenChanged = (e: React.ChangeEvent<HTMLInputElement>) =>
+    this.setState({ gitSecurityToken: e.currentTarget.value, overwrite: false }, this.checkIdAvailability)
 
   handleFileChanged = (files: FileList | null) => {
     if (!files) {
@@ -200,6 +206,19 @@ class ImportBotModal extends Component<Props, State> {
                 maxLength={500}
                 value={this.state.gitRepositoryUrl}
                 onChange={this.handleGitUrlChanged}
+                autoFocus={true}
+              />
+            </FormGroup>
+            <FormGroup label={lang.tr('admin.workspace.bots.import.gitSecurityToken')} labelInfo="" labelFor="archive">
+              <InputGroup
+                id="input-gitSecurityToken"
+                tabIndex={1}
+                placeholder={lang.tr('admin.workspace.bots.create.gitSecurityTokenPlaceholder')}
+                intent={Intent.PRIMARY}
+                minLength={3}
+                maxLength={500}
+                value={this.state.gitSecurityToken}
+                onChange={this.handleGitSecurityTokenChanged}
                 autoFocus={true}
               />
             </FormGroup>

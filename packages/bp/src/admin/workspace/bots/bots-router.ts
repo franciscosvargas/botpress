@@ -301,7 +301,11 @@ class BotsRouter extends CustomAdminRouter {
       this.needPermissions('write', `${this.resource}.archive`),
       this.asyncMiddleware(async (req, res) => {
         const botFolder = `${__dirname}/git/${req.params.botId}`
-        await Git.Clone(req.body.gitRepositoryUrl, botFolder)
+        const gitUrl = req.body.gitSecurityToken
+          ? `https://${req.body.gitSecurityToken}:x-oauth-basic@${req.body.gitRepositoryUrl.split('://')[1]}`
+          : req.body.gitRepositoryUrl
+
+        await Git.Clone(gitUrl, botFolder)
 
         const botId = await this.botService.makeBotId(req.params.botId, req.workspace!)
 
